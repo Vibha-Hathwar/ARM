@@ -1,0 +1,38 @@
+#include<lpc214x.h>
+unsigned char countOnes(unsigned long x)
+{
+  unsigned char i,count=0;
+  for(i=0;i<8;i++)
+  {
+    if(x &(0x00400000>>i))
+      count++;
+  }
+  return count;
+}
+void delay(unsigned long x)
+{
+  unsigned char i;
+  while(x--)
+    for(i=0;i<250;i++);
+}
+int main ()
+{
+  unsigned long temp ;
+  unsigned char count;
+  PINSEL0 = 0; //Configure P0 as GPIO port
+  PINSEL1 = 0; //Configure P1 as GPIO port
+  IODIR0 = 0X00000000; // Set port P0.15 to P0.22 as input
+  IODIR1= 0X00FF0000; // Set port P1.16 to P1.23 as output
+  while(1)
+  {
+    temp = IOPIN0; // read port P0
+    count = countOnes(temp);
+    if(count%2==0)
+      IOSET1 = 0X00FF0000; //display FF if even parity
+    else
+      IOCLR1 = 0X00FF0000; //display 00 if odd parity
+    delay(20000);
+    IOPIN1 = count << 16; //display no. of 1’s in input
+    delay(20000);
+  }
+}
